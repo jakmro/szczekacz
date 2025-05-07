@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { AudioManager, AudioRecorder } from 'react-native-audio-api';
+import { AudioManager, AudioRecorder, AudioBuffer } from 'react-native-audio-api';
 import { SafeAreaView, Text } from 'react-native';
 import { useExecutorchModule } from 'react-native-executorch';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
@@ -25,6 +25,7 @@ export default function App() {
   });
 
   const recorderRef = useRef<AudioRecorder | null>(null);
+  const audioBuffersRef = useRef<AudioBuffer[]>([]);
 
   const [probs, setProbs] = useState([0, 0, 0]);
   const [detectedClass, setDetectedClass] = useState<string>('None');
@@ -38,7 +39,7 @@ export default function App() {
 
     recorderRef.current = new AudioRecorder({
       sampleRate: 16000,
-      bufferLengthInSamples: AUDIO_DURATION * 16000,
+      bufferLengthInSamples: 8000,
     });
 
     onRecord();
@@ -51,7 +52,17 @@ export default function App() {
     console.log('Recording started');
 
     recorderRef.current.onAudioReady(async (buffer) => {
-      const waveform = Float32Array.of(...buffer.getChannelData(0));
+      audioBuffersRef.current = audioBuffersRef.current.slice(-5);
+      audioBuffersRef.current.push(buffer);
+
+      const waveform = Float32Array.of(
+        ...audioBuffersRef.current[0].getChannelData(0),
+        ...audioBuffersRef.current[1].getChannelData(0),
+        ...audioBuffersRef.current[2].getChannelData(0),
+        ...audioBuffersRef.current[3].getChannelData(0),
+        ...audioBuffersRef.current[4].getChannelData(0),
+        ...audioBuffersRef.current[5].getChannelData(0),
+      );
 
       const output = await model.forward(waveform, [[1, 1, AUDIO_DURATION * 16000]]);
       const softmaxOutput = softmax(output[0]);
