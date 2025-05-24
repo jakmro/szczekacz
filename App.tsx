@@ -5,8 +5,8 @@ import { useExecutorchModule } from 'react-native-executorch';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 
 // CONFIGURATION
-const DOG_THRESHOLD = 0.9;
-const CAT_THRESHOLD = 0.9;
+const DOG_THRESHOLD = 0.5;
+const CAT_THRESHOLD = 0.5;
 
 // Uninstall the app and install the new version if you change the AUDIO_DURATION
 const AUDIO_DURATION = 3;
